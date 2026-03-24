@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recipe Feedback · tandoco</title>
+<style>
+  :root {
+    --primary: #E8703A;
+    --primary-dark: #C85A28;
+    --primary-light: #FDF0EB;
+    --green: #2A7A4B;
+    --green-light: #E8F5EE;
+    --yellow: #D97706;
+    --red: #DC2626;
+    --red-light: #FEF2F2;
+    --gray-light: #F3F4F6;
+    --border: #E5E7EB;
+    --text: #111827;
+    --text-muted: #6B7280;
+    --bg: #F9F7F4;
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.07);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 32px 16px 64px;
+  }
+
+  .fb-card {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 480px;
+    overflow: hidden;
+  }
+
+  .fb-header {
+    background: var(--primary);
+    padding: 28px 28px 24px;
+    color: #fff;
+    text-align: center;
+  }
+  .fb-logo {
+    font-size: 13px; font-weight: 700; opacity: 0.85;
+    margin-bottom: 16px; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  .fb-recipe-name { font-size: 22px; font-weight: 800; line-height: 1.2; margin-bottom: 6px; }
+  .fb-recipe-sub { font-size: 13px; opacity: 0.8; }
+
+  .fb-body { padding: 28px; }
+
+  .fb-question { margin-bottom: 24px; }
+  .fb-label { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; display: block; }
+
+  /* Big star rating */
+  .fb-stars { display: flex; gap: 8px; justify-content: center; flex-direction: row-reverse; }
+  .fb-stars input { display: none; }
+  .fb-stars label {
+    font-size: 44px; cursor: pointer; color: #D1D5DB;
+    transition: color 0.1s, transform 0.1s; line-height: 1;
+  }
+  .fb-stars label:hover,
+  .fb-stars label:hover ~ label,
+  .fb-stars input:checked ~ label { color: var(--yellow); }
+  .fb-stars label:hover { transform: scale(1.1); }
+
+  .star-hint { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 8px; min-height: 20px; }
+
+  .fb-textarea {
+    width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 14px; line-height: 1.5;
+    font-family: inherit; resize: vertical; min-height: 100px; outline: none;
+    transition: border 0.15s;
+  }
+  .fb-textarea:focus { border-color: var(--primary); }
+
+  .fb-input {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 14px;
+    font-family: inherit; outline: none; transition: border 0.15s;
+  }
+  .fb-input:focus { border-color: var(--primary); }
+
+  .fb-submit {
+    width: 100%; padding: 14px; background: var(--primary);
+    border: none; border-radius: var(--radius-sm); color: #fff;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: background 0.15s, opacity 0.15s; margin-top: 8px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .fb-submit:hover:not(:disabled) { background: var(--primary-dark); }
+  .fb-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .fb-error-box {
+    background: var(--red-light); border: 1px solid #FECACA;
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    font-size: 13px; color: var(--red); margin-bottom: 16px;
+    display: none; line-height: 1.5;
+  }
+  .fb-error-box.visible { display: block; }
+
+  /* Success / Error states */
+  .fb-result { text-align: center; padding: 40px 28px; }
+  .fb-result-icon { font-size: 56px; margin-bottom: 16px; }
+  .fb-result h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .fb-result p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+  /* Loading skeleton */
+  .fb-loading { padding: 40px 28px; text-align: center; }
+  .fb-loading p { color: var(--text-muted); font-size: 14px; margin-top: 16px; }
+  .spinner {
+    width: 36px; height: 36px; border: 3px solid var(--border);
+    border-top-color: var(--primary); border-radius: 50%;
+    animation: spin 0.7s linear infinite; margin: 0 auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .config-notice {
+    background: #FEF3C7; border: 1px solid #FDE68A;
+    border-radius: var(--radius-sm); padding: 14px 16px;
+    font-size: 13px; color: #92400E; line-height: 1.6; margin: 0;
+  }
+  .config-notice strong { display: block; margin-bottom: 4px; font-size: 14px; }
+  .config-notice code {
+    background: rgba(0,0,0,0.08); padding: 1px 5px;
+    border-radius: 3px; font-family: monospace; font-size: 12px;
+  }
+</style>
+</head>
+<body>
+<div class="fb-card" id="fb-card">
+  <div class="fb-header" id="fb-header">
+    <div class="fb-logo">🧪 tandoco Recipe Lab</div>
+    <div class="fb-recipe-name" id="fb-title">Loading…</div>
+  </div>
+  <div id="fb-body-wrap">
+    <div class="fb-loading">
+      <div class="spinner"></div>
+      <p>Loading recipe…</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ─────────────────────────────────────────────────────────────────
+// 
+//  HOW THIS WORKS:
+//  Feedback is submitted as a GitHub Issue to your repo.
+//  This is completely free, requires no server, and appears instantly
+//  in your repo's Issues tab. Your main app can then read those issues
+//  to show feedback alongside recipes.
+//
+//  SETUP (one-time, 5 minutes):
+//  1. Create a GitHub account if you don't have one
+//  2. Create a new PUBLIC repo (e.g. "tandoco-feedback") — separate from your site repo
+//  3. Create a fine-grained Personal Access Token:
+//     github.com → Settings → Developer Settings → Personal Access Tokens → Fine-grained
+//     → Only select the feedback repo → give "Issues" Read & Write permission
+//  4. Replace the three values below with your own
+
+const GITHUB_OWNER = 'YOUR-GITHUB-USERNAME';   // e.g. 'tandoco'
+const GITHUB_REPO  = 'YOUR-FEEDBACK-REPO';      // e.g. 'recipe-feedback'
+const GITHUB_TOKEN = 'YOUR-GITHUB-TOKEN';        // e.g. 'github_pat_...'
+
+// ────────────────────────────────────────────────────────────────────────────
+
+const STAR_HINTS = ['', 'Poor', 'Fair', 'Good', 'Great', 'Amazing!'];
+const params = new URLSearchParams(window.location.search);
+const recipeId   = params.get('id')   || '';
+const recipeName = params.get('name') || 'Recipe';
+const recipeCategory = params.get('cat') || '';
+const recipeServing  = params.get('srv') || '';
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function hintStar(n) {
+  const el = document.getElementById('star-hint-text');
+  if (el) el.textContent = n ? STAR_HINTS[n] : '';
+}
+
+function isConfigured() {
+  return GITHUB_OWNER !== 'YOUR-GITHUB-USERNAME'
+    && GITHUB_REPO  !== 'YOUR-FEEDBACK-REPO'
+    && GITHUB_TOKEN !== 'YOUR-GITHUB-TOKEN';
+}
+
+function renderForm() {
+  document.getElementById('fb-title').textContent = esc(recipeName);
+
+  const sub = [recipeCategory, recipeServing].filter(Boolean).join(' · ');
+  if (sub) {
+    const subEl = document.createElement('div');
+    subEl.className = 'fb-recipe-sub';
+    subEl.textContent = sub;
+    document.getElementById('fb-header').appendChild(subEl);
+  }
+
+  if (!isConfigured()) {
+    document.getElementById('fb-body-wrap').innerHTML = `
+      <div class="fb-body">
+        <div class="config-notice">
+          <strong>⚙️ Setup required</strong>
+          Open <code>feedback.html</code> and fill in your GitHub details at the top of the script
+          (<code>GITHUB_OWNER</code>, <code>GITHUB_REPO</code>, <code>GITHUB_TOKEN</code>).
+          See the README for step-by-step instructions.
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (!recipeId) {
+    document.getElementById('fb-body-wrap').innerHTML = `
+      <div class="fb-result">
+        <div class="fb-result-icon">🔍</div>
+        <h2>Invalid Link</h2>
+        <p>This feedback link is missing a recipe ID. Please ask your host to regenerate the QR code.</p>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('fb-body-wrap').innerHTML = `
+    <div class="fb-body">
+      <div class="fb-error-box" id="fb-error"></div>
+
+      <div class="fb-question">
+        <label class="fb-label">How would you rate this recipe? *</label>
+        <div class="fb-stars" id="fb-star-row">
+          <input type="radio" name="fbr" id="fbr5" value="5"><label for="fbr5" onmouseover="hintStar(5)" onmouseout="hintStar(0)">★</label>
+          <input type="radio" name="fbr" id="fbr4" value="4"><label for="fbr4" onmouseover="hintStar(4)" onmouseout="hintStar(0)">★</label>
+          <input type="radio" name="fbr" id="fbr3" value="3"><label for="fbr3" onmouseover="hintStar(3)" onmouseout="hintStar(0)">★</label>
+          <input type="radio" name="fbr" id="fbr2" value="2"><label for="fbr2" onmouseover="hintStar(2)" onmouseout="hintStar(0)">★</label>
+          <input type="radio" name="fbr" id="fbr1" value="1"><label for="fbr1" onmouseover="hintStar(1)" onmouseout="hintStar(0)">★</label>
+        </div>
+        <div class="star-hint" id="star-hint-text"></div>
+      </div>
+
+      <div class="fb-question">
+        <label class="fb-label">Your name *</label>
+        <input class="fb-input" id="fb-pub-name" placeholder="e.g. Sarah M." autocomplete="name">
+      </div>
+
+      <div class="fb-question">
+        <label class="fb-label">Comments &amp; thoughts</label>
+        <textarea class="fb-textarea" id="fb-pub-comment" placeholder="What did you think? What did you love? Any suggestions?"></textarea>
+      </div>
+
+      <button class="fb-submit" id="fb-submit-btn" onclick="submitFeedback()">
+        Submit Feedback
+      </button>
+    </div>`;
+}
+
+async function submitFeedback() {
+  const ratingEl = document.querySelector('input[name="fbr"]:checked');
+  const name    = (document.getElementById('fb-pub-name')?.value || '').trim();
+  const comment = (document.getElementById('fb-pub-comment')?.value || '').trim();
+  const errEl   = document.getElementById('fb-error');
+  const btn     = document.getElementById('fb-submit-btn');
+
+  errEl.classList.remove('visible');
+
+  if (!ratingEl) {
+    errEl.textContent = 'Please select a star rating before submitting.';
+    errEl.classList.add('visible');
+    return;
+  }
+  if (!name) {
+    errEl.textContent = 'Please enter your name before submitting.';
+    errEl.classList.add('visible');
+    return;
+  }
+
+  const rating = parseInt(ratingEl.value);
+  const stars  = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+
+  btn.disabled = true;
+  btn.innerHTML = `<div class="spinner" style="width:20px;height:20px;border-width:2px;border-color:rgba(255,255,255,0.3);border-top-color:#fff"></div> Submitting…`;
+
+  // Build a structured GitHub Issue body that the main app can parse
+  const issueTitle = `[feedback] ${recipeName} — ${name} — ${stars}`;
+  const issueBody  = [
+    `**Recipe ID:** ${recipeId}`,
+    `**Recipe Name:** ${recipeName}`,
+    `**Tester Name:** ${name}`,
+    `**Rating:** ${rating}/5 ${stars}`,
+    `**Submitted:** ${new Date().toISOString()}`,
+    '',
+    '**Comment:**',
+    comment || '*(no comment)*',
+    '',
+    '<!-- tandoco-feedback-v1 -->',
+  ].join('\n');
+
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${GITHUB_TOKEN}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+      body: JSON.stringify({
+        title: issueTitle,
+        body: issueBody,
+        labels: ['feedback', recipeId],
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.message || `GitHub API error ${res.status}`);
+    }
+
+    // Success!
+    document.getElementById('fb-body-wrap').innerHTML = `
+      <div class="fb-result">
+        <div class="fb-result-icon">🎉</div>
+        <h2>Thanks, ${esc(name)}!</h2>
+        <p>Your feedback for <strong>${esc(recipeName)}</strong> has been sent to the team. They really appreciate you taking the time!</p>
+      </div>`;
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = 'Submit Feedback';
+    errEl.textContent = `Submission failed: ${err.message}. Please try again or let the team know directly.`;
+    errEl.classList.add('visible');
+    console.error('Feedback submission error:', err);
+  }
+}
+
+// Boot
+renderForm();
+</script>
+</body>
+</html>
