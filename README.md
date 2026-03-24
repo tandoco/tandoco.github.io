@@ -1,2 +1,1703 @@
-# tandoco.github.io
-tandoco Recipe Lab
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>tandoco Recipe Lab</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --primary: #E8703A;
+    --primary-dark: #C85A28;
+    --primary-light: #FDF0EB;
+    --green: #2A7A4B;
+    --green-light: #E8F5EE;
+    --blue: #2563EB;
+    --blue-light: #EFF6FF;
+    --purple: #7C3AED;
+    --purple-light: #F5F3FF;
+    --teal: #0D9488;
+    --teal-light: #F0FDFA;
+    --red: #DC2626;
+    --red-light: #FEF2F2;
+    --yellow: #D97706;
+    --yellow-light: #FFFBEB;
+    --gray: #6B7280;
+    --gray-light: #F3F4F6;
+    --border: #E5E7EB;
+    --text: #111827;
+    --text-muted: #6B7280;
+    --bg: #F9F7F4;
+    --card: #FFFFFF;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-lg: 0 10px 25px rgba(0,0,0,0.12), 0 4px 10px rgba(0,0,0,0.07);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── Status Colors ── */
+  .status-ideation  { background: var(--purple-light); color: var(--purple); }
+  .status-testing   { background: var(--blue-light);   color: var(--blue); }
+  .status-refining  { background: var(--yellow-light);  color: var(--yellow); }
+  .status-approved  { background: var(--green-light);  color: var(--green); }
+  .status-rejected  { background: var(--red-light);    color: var(--red); }
+
+  /* ── Header ── */
+  header {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: var(--primary);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+  }
+  .logo-brand { color: var(--primary); }
+  .logo-sub { color: var(--text-muted); font-weight: 500; font-size: 14px; margin-left: 2px; }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-ghost {
+    background: transparent; color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--gray-light); color: var(--text); }
+  .btn-sm { padding: 5px 11px; font-size: 12px; }
+  .btn-icon {
+    width: 32px; height: 32px; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-sm); border: 1px solid var(--border);
+    background: #fff; cursor: pointer; font-size: 15px;
+    transition: all 0.15s;
+  }
+  .btn-icon:hover { background: var(--gray-light); }
+
+  /* ── Layout ── */
+  .app { display: flex; }
+
+  .sidebar {
+    width: 220px; min-width: 220px;
+    background: #fff;
+    border-right: 1px solid var(--border);
+    height: calc(100vh - 60px);
+    position: sticky;
+    top: 60px;
+    overflow-y: auto;
+    padding: 16px 0;
+  }
+
+  .sidebar-label {
+    font-size: 11px; font-weight: 700; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 0 16px; margin-bottom: 4px;
+  }
+
+  .sidebar-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 16px; cursor: pointer;
+    color: var(--text-muted); font-weight: 500; font-size: 13px;
+    transition: all 0.1s;
+    border-left: 3px solid transparent;
+    user-select: none;
+  }
+  .sidebar-item:hover { background: var(--gray-light); color: var(--text); }
+  .sidebar-item.active { background: var(--primary-light); color: var(--primary); border-left-color: var(--primary); }
+  .sidebar-item .count {
+    margin-left: auto;
+    background: var(--gray-light); color: var(--text-muted);
+    font-size: 11px; font-weight: 700;
+    padding: 1px 7px; border-radius: 20px;
+    min-width: 22px; text-align: center;
+  }
+  .sidebar-item.active .count { background: var(--primary-light); color: var(--primary); }
+
+  .sidebar-divider { height: 1px; background: var(--border); margin: 10px 0; }
+
+  .main { flex: 1; padding: 24px; min-width: 0; }
+
+  /* ── Toolbar ── */
+  .toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+
+  .search-wrap { flex: 1; max-width: 360px; position: relative; }
+  .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+  .search-wrap input {
+    width: 100%; padding: 8px 10px 8px 34px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 13px; background: #fff; outline: none; transition: border 0.15s;
+  }
+  .search-wrap input:focus { border-color: var(--primary); }
+
+  .sort-select {
+    padding: 8px 12px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); background: #fff;
+    font-size: 13px; cursor: pointer; outline: none; color: var(--text);
+  }
+
+  /* ── Stats Bar ── */
+  .stats-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .stat-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .stat-value { font-size: 22px; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-weight: 500; }
+
+  /* ── Cards Grid ── */
+  .recipes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+
+  .recipe-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    box-shadow: var(--shadow); cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex; flex-direction: column;
+  }
+  .recipe-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+
+  .card-header {
+    padding: 16px 16px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+  }
+  .card-title-area { flex: 1; min-width: 0; }
+  .card-name { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+  .card-category { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+
+  .status-badge {
+    flex-shrink: 0; font-size: 11px; font-weight: 700; padding: 3px 9px;
+    border-radius: 20px; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
+  }
+
+  .card-body { padding: 12px 16px; flex: 1; }
+  .card-description {
+    font-size: 13px; color: var(--text-muted);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    margin-bottom: 12px; line-height: 1.5; min-height: 39px;
+  }
+
+  .macros-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .macro-chip { background: var(--gray-light); border-radius: 8px; padding: 6px 4px; text-align: center; }
+  .macro-chip .val { font-size: 14px; font-weight: 700; line-height: 1; color: var(--text); }
+  .macro-chip .lbl { font-size: 10px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+  .macro-chip.protein .val { color: var(--primary); }
+
+  .card-footer {
+    padding: 10px 16px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .card-footer-left { display: flex; align-items: center; gap: 10px; }
+  .card-meta { display: flex; align-items: center; gap: 4px; }
+  .stars-mini { color: var(--yellow); font-size: 12px; }
+
+  /* ── Empty State ── */
+  .empty { text-align: center; padding: 64px 24px; color: var(--text-muted); grid-column: 1/-1; }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+  .empty p { font-size: 14px; margin-bottom: 20px; }
+
+  /* ── Modal ── */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 20px; overflow-y: auto;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: #fff; border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    width: 100%; max-width: 700px; margin: auto;
+    transform: translateY(12px); transition: transform 0.2s; overflow: hidden;
+  }
+  .overlay.open .modal { transform: translateY(0); }
+
+  .modal-header {
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-title { font-size: 17px; font-weight: 700; }
+  .modal-close {
+    width: 30px; height: 30px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text-muted);
+    border: none; background: none; font-size: 20px; transition: background 0.1s;
+  }
+  .modal-close:hover { background: var(--gray-light); }
+
+  .modal-body { padding: 24px; max-height: calc(90vh - 140px); overflow-y: auto; }
+  .modal-footer {
+    padding: 16px 24px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 10px;
+  }
+
+  /* ── Form ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .form-input, .form-select, .form-textarea {
+    padding: 9px 11px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 14px;
+    outline: none; transition: border 0.15s; font-family: inherit;
+    color: var(--text); background: #fff;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary); }
+  .form-textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+  .section-title {
+    font-size: 13px; font-weight: 700; color: var(--text);
+    margin: 20px 0 12px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .section-title:first-child { margin-top: 0; }
+
+  /* ── Macros Form ── */
+  .macros-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 4px; }
+  .macro-input-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .macro-input-wrap .form-label { font-size: 11px; text-align: center; }
+  .macro-input-wrap .form-input { text-align: center; padding: 8px 6px; }
+
+  /* ── Ingredients ── */
+  .ingredient-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+  .ingredient-row { display: grid; grid-template-columns: 1fr 120px 32px; gap: 6px; align-items: center; }
+  .ingredient-row input { padding: 7px 10px; }
+  .remove-btn {
+    width: 32px; height: 32px; border: 1px solid var(--border);
+    background: #fff; border-radius: var(--radius-sm);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--red); font-size: 16px; transition: background 0.1s;
+  }
+  .remove-btn:hover { background: var(--red-light); }
+
+  /* ── Notes ── */
+  .notes-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+  .note-item { background: var(--gray-light); border-radius: var(--radius-sm); padding: 12px; }
+  .note-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; display: flex; gap: 6px; align-items: center; }
+  .note-author { font-weight: 600; color: var(--text); }
+  .note-text { font-size: 13px; line-height: 1.5; }
+
+  .add-note-row { display: flex; gap: 8px; }
+  .add-note-row textarea {
+    flex: 1; padding: 8px 10px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 13px;
+    font-family: inherit; resize: none; height: 64px;
+    outline: none; transition: border 0.15s;
+  }
+  .add-note-row textarea:focus { border-color: var(--primary); }
+
+  /* ── Feedback ── */
+  .feedback-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+  .feedback-item {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 14px;
+  }
+  .feedback-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .feedback-name { font-weight: 700; font-size: 14px; }
+  .feedback-date { font-size: 11px; color: var(--text-muted); }
+  .stars { color: var(--yellow); font-size: 16px; margin-bottom: 6px; }
+  .feedback-comment { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+  .avg-rating { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); padding: 8px 0 12px; }
+  .avg-rating strong { font-size: 20px; color: var(--text); }
+
+  /* ── Detail Macros ── */
+  .detail-macro-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 16px 0; }
+  .detail-macro { background: var(--gray-light); border-radius: 10px; padding: 12px; text-align: center; }
+  .detail-macro .val { font-size: 20px; font-weight: 800; line-height: 1; }
+  .detail-macro .lbl { font-size: 11px; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
+  .detail-macro.protein { background: var(--primary-light); }
+  .detail-macro.protein .val { color: var(--primary); }
+
+  .ingredient-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--gray-light); border-radius: 6px;
+    padding: 4px 10px; font-size: 13px; margin: 3px;
+  }
+  .ingredient-amount { color: var(--text-muted); font-size: 12px; }
+
+  .detail-instructions {
+    font-size: 14px; line-height: 1.7; color: var(--text);
+    white-space: pre-wrap; background: var(--gray-light);
+    border-radius: var(--radius-sm); padding: 14px;
+  }
+
+  .status-select-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; background: var(--gray-light);
+    border-radius: var(--radius-sm); margin-bottom: 12px;
+  }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
+  .tab {
+    padding: 10px 18px; font-size: 13px; font-weight: 600;
+    cursor: pointer; color: var(--text-muted);
+    border-bottom: 2px solid transparent; margin-bottom: -2px;
+    transition: all 0.15s; user-select: none;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+  /* ── QR Modal ── */
+  .qr-modal-content { text-align: center; }
+  #qr-canvas { display: inline-block; margin: 16px auto; }
+  .qr-recipe-name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .qr-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+  .qr-url-box {
+    background: var(--gray-light); border-radius: var(--radius-sm);
+    padding: 10px 14px; font-size: 12px; font-family: monospace;
+    word-break: break-all; text-align: left; margin: 12px 0;
+    color: var(--text-muted); border: 1px solid var(--border);
+    max-height: 60px; overflow-y: auto;
+  }
+  .qr-tip {
+    background: var(--blue-light); border: 1px solid #BFDBFE;
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    font-size: 12px; color: #1D4ED8; text-align: left; line-height: 1.5;
+    margin-top: 8px;
+  }
+
+  /* ── Confirm Modal ── */
+  .confirm-modal { max-width: 420px; }
+  .confirm-icon { font-size: 40px; text-align: center; margin-bottom: 12px; }
+  .confirm-msg { text-align: center; font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+  .confirm-title { text-align: center; font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+
+  /* ── Toast ── */
+  #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 8px; }
+  .toast {
+    background: var(--text); color: #fff;
+    padding: 12px 18px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 500; box-shadow: var(--shadow-lg);
+    animation: slideUp 0.25s ease; max-width: 320px;
+  }
+  .toast.success { background: var(--green); }
+  .toast.error   { background: var(--red); }
+  @keyframes slideUp {
+    from { transform: translateY(16px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+  }
+
+  /* ── Login Screen ── */
+  #login-screen {
+    display: none;
+    position: fixed; inset: 0; z-index: 500;
+    background: var(--bg);
+    align-items: center; justify-content: center;
+    min-height: 100vh;
+  }
+  #login-screen.visible { display: flex; }
+
+  .login-card {
+    background: #fff; border-radius: 20px;
+    box-shadow: var(--shadow-lg);
+    width: 100%; max-width: 380px;
+    overflow: hidden;
+  }
+  .login-header {
+    background: var(--primary);
+    padding: 32px 32px 28px;
+    text-align: center; color: #fff;
+  }
+  .login-logo-icon {
+    width: 52px; height: 52px; background: rgba(255,255,255,0.2);
+    border-radius: 14px; display: flex; align-items: center;
+    justify-content: center; font-size: 26px; margin: 0 auto 14px;
+  }
+  .login-title { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+  .login-subtitle { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+  .login-body { padding: 28px 32px 32px; }
+  .login-group { margin-bottom: 16px; }
+  .login-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .login-input {
+    width: 100%; padding: 11px 13px; border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 15px; font-family: inherit;
+    outline: none; transition: border 0.15s; color: var(--text);
+  }
+  .login-input:focus { border-color: var(--primary); }
+  .login-btn {
+    width: 100%; padding: 13px; background: var(--primary);
+    border: none; border-radius: var(--radius-sm); color: #fff;
+    font-size: 15px; font-weight: 700; cursor: pointer;
+    transition: background 0.15s; margin-top: 8px;
+  }
+  .login-btn:hover { background: var(--primary-dark); }
+  .login-error {
+    background: var(--red-light); border: 1px solid #FECACA;
+    border-radius: var(--radius-sm); padding: 10px 13px;
+    font-size: 13px; color: var(--red); margin-bottom: 14px;
+    display: none;
+  }
+  .login-error.visible { display: block; }
+
+  /* ══════════════════════════════════════
+     FEEDBACK PAGE (public-facing, scanned)
+  ══════════════════════════════════════ */
+  #feedback-page {
+    display: none;
+    min-height: 100vh;
+    background: var(--bg);
+    align-items: flex-start;
+    justify-content: center;
+    padding: 32px 16px;
+  }
+  #feedback-page.visible { display: flex; }
+
+  .fb-card {
+    background: #fff; border-radius: 20px;
+    box-shadow: var(--shadow-lg);
+    width: 100%; max-width: 480px;
+    overflow: hidden;
+  }
+  .fb-header {
+    background: var(--primary);
+    padding: 28px 28px 24px;
+    color: #fff; text-align: center;
+  }
+  .fb-logo { font-size: 13px; font-weight: 700; opacity: 0.85; margin-bottom: 16px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .fb-recipe-name { font-size: 22px; font-weight: 800; line-height: 1.2; margin-bottom: 6px; }
+  .fb-recipe-sub { font-size: 13px; opacity: 0.8; }
+
+  .fb-body { padding: 28px; }
+
+  .fb-question { margin-bottom: 24px; }
+  .fb-label { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; display: block; }
+
+  /* Big star rating */
+  .fb-stars { display: flex; gap: 8px; justify-content: center; flex-direction: row-reverse; }
+  .fb-stars input { display: none; }
+  .fb-stars label {
+    font-size: 44px; cursor: pointer; color: #D1D5DB;
+    transition: color 0.1s, transform 0.1s; line-height: 1;
+  }
+  .fb-stars label:hover,
+  .fb-stars label:hover ~ label,
+  .fb-stars input:checked ~ label { color: var(--yellow); }
+  .fb-stars label:hover { transform: scale(1.1); }
+
+  .star-hint { text-align: center; font-size: 13px; color: var(--text-muted); margin-top: 8px; min-height: 20px; }
+
+  .fb-textarea {
+    width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 14px; line-height: 1.5;
+    font-family: inherit; resize: vertical; min-height: 100px; outline: none;
+    transition: border 0.15s;
+  }
+  .fb-textarea:focus { border-color: var(--primary); }
+
+  .fb-input {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); font-size: 14px;
+    font-family: inherit; outline: none; transition: border 0.15s;
+  }
+  .fb-input:focus { border-color: var(--primary); }
+
+  .fb-submit {
+    width: 100%; padding: 14px; background: var(--primary);
+    border: none; border-radius: var(--radius-sm); color: #fff;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: background 0.15s; margin-top: 8px;
+  }
+  .fb-submit:hover { background: var(--primary-dark); }
+
+  .fb-success {
+    text-align: center; padding: 40px 28px;
+  }
+  .fb-success-icon { font-size: 56px; margin-bottom: 16px; }
+  .fb-success h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .fb-success p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+  .fb-error {
+    text-align: center; padding: 60px 28px;
+  }
+  .fb-error-icon { font-size: 48px; margin-bottom: 16px; }
+  .fb-error h2 { font-size: 20px; font-weight: 800; margin-bottom: 8px; color: var(--red); }
+  .fb-error p { font-size: 14px; color: var(--text-muted); }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .stats-bar { grid-template-columns: repeat(3, 1fr); }
+    .macros-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .main { padding: 16px; }
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .recipes-grid { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .detail-macro-bar { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo-icon">🧪</div>
+      <div class="login-title">tandoco Recipe Lab</div>
+      <div class="login-subtitle">Sign in to manage your recipes</div>
+    </div>
+    <div class="login-body">
+      <div class="login-error" id="login-error">Incorrect username or password.</div>
+      <div class="login-group">
+        <label class="login-label" for="login-user">Username</label>
+        <input class="login-input" id="login-user" type="text" placeholder="Username" autocomplete="username" onkeydown="if(event.key==='Enter')tryLogin()">
+      </div>
+      <div class="login-group">
+        <label class="login-label" for="login-pass">Password</label>
+        <input class="login-input" id="login-pass" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')tryLogin()">
+      </div>
+      <button class="login-btn" onclick="tryLogin()">Sign In</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════ -->
+<div id="main-app">
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🧪</div>
+    <span><span class="logo-brand">tandoco</span> Recipe Lab</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-primary" onclick="openAddRecipe()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      New Recipe
+    </button>
+    <button class="btn btn-ghost" onclick="logout()" title="Sign out" style="gap:5px">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign out
+    </button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div style="margin-bottom:8px">
+      <div class="sidebar-label">Pipeline</div>
+      <div class="sidebar-item active" data-filter="all" onclick="setFilter('all')">
+        <span>🗂</span> All Recipes <span class="count" id="count-all">0</span>
+      </div>
+      <div class="sidebar-item" data-filter="ideation" onclick="setFilter('ideation')">
+        <span>💡</span> Ideation <span class="count" id="count-ideation">0</span>
+      </div>
+      <div class="sidebar-item" data-filter="testing" onclick="setFilter('testing')">
+        <span>🔬</span> Testing <span class="count" id="count-testing">0</span>
+      </div>
+      <div class="sidebar-item" data-filter="refining" onclick="setFilter('refining')">
+        <span>✏️</span> Refining <span class="count" id="count-refining">0</span>
+      </div>
+      <div class="sidebar-item" data-filter="approved" onclick="setFilter('approved')">
+        <span>✅</span> Approved <span class="count" id="count-approved">0</span>
+      </div>
+      <div class="sidebar-item" data-filter="rejected" onclick="setFilter('rejected')">
+        <span>❌</span> Rejected <span class="count" id="count-rejected">0</span>
+      </div>
+    </div>
+    <div class="sidebar-divider"></div>
+    <div>
+      <div class="sidebar-label">Categories</div>
+      <div id="category-list"></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#FDF0EB">🍽️</div>
+        <div><div class="stat-value" id="stat-total">0</div><div class="stat-label">Total Recipes</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--purple-light)">💡</div>
+        <div><div class="stat-value" id="stat-ideation">0</div><div class="stat-label">Ideation</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--blue-light)">🔬</div>
+        <div><div class="stat-value" id="stat-testing">0</div><div class="stat-label">Testing</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--green-light)">✅</div>
+        <div><div class="stat-value" id="stat-approved">0</div><div class="stat-label">Approved</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--yellow-light)">💬</div>
+        <div><div class="stat-value" id="stat-feedback">0</div><div class="stat-label">Feedback</div></div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="search-input" placeholder="Search recipes…" oninput="renderRecipes()">
+      </div>
+      <select class="sort-select" id="sort-select" onchange="renderRecipes()">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+        <option value="name">Name A–Z</option>
+        <option value="protein">Highest Protein</option>
+        <option value="rating">Best Rated</option>
+      </select>
+    </div>
+
+    <div class="recipes-grid" id="recipes-grid"></div>
+  </main>
+</div>
+
+</div><!-- #main-app -->
+
+<!-- ══════════════════════════════════════
+     PUBLIC FEEDBACK PAGE (via QR scan)
+══════════════════════════════════════ -->
+<div id="feedback-page">
+  <div class="fb-card" id="fb-card-inner"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODALS
+══════════════════════════════════════ -->
+
+<!-- Add/Edit Recipe -->
+<div class="overlay" id="form-overlay" onclick="if(event.target.id==='form-overlay')closeOverlay('form-overlay')">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-header">
+      <div class="modal-title" id="form-modal-title">New Recipe</div>
+      <button class="modal-close" onclick="closeOverlay('form-overlay')">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="recipe-form" onsubmit="saveRecipe(event)">
+        <div class="section-title">📋 Basic Info</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Recipe Name *</label>
+            <input class="form-input" id="f-name" required placeholder="e.g. High-Protein Chicken Bowl">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <input class="form-input" id="f-category" list="category-datalist" placeholder="e.g. Post-Workout, Breakfast…">
+            <datalist id="category-datalist">
+              <option value="Breakfast"><option value="Lunch"><option value="Dinner">
+              <option value="Snack"><option value="Pre-Workout"><option value="Post-Workout">
+              <option value="Dessert"><option value="Smoothie">
+            </datalist>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" id="f-description" rows="2" placeholder="Short description…"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Serving Size</label>
+            <input class="form-input" id="f-serving-size" placeholder="e.g. 1 bowl (400g)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Servings</label>
+            <input class="form-input" id="f-servings" type="number" min="1" placeholder="e.g. 2">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="f-status">
+              <option value="ideation">💡 Ideation</option>
+              <option value="testing">🔬 Testing</option>
+              <option value="refining">✏️ Refining</option>
+              <option value="approved">✅ Approved</option>
+              <option value="rejected">❌ Rejected</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-title">💪 Macros (per serving)</div>
+        <div class="macros-grid">
+          <div class="macro-input-wrap">
+            <label class="form-label">Calories</label>
+            <input class="form-input" id="f-calories" type="number" min="0" placeholder="0">
+          </div>
+          <div class="macro-input-wrap">
+            <label class="form-label" style="color:var(--primary)">Protein (g)</label>
+            <input class="form-input" id="f-protein" type="number" min="0" placeholder="0">
+          </div>
+          <div class="macro-input-wrap">
+            <label class="form-label">Carbs (g)</label>
+            <input class="form-input" id="f-carbs" type="number" min="0" placeholder="0">
+          </div>
+          <div class="macro-input-wrap">
+            <label class="form-label">Fat (g)</label>
+            <input class="form-input" id="f-fat" type="number" min="0" placeholder="0">
+          </div>
+          <div class="macro-input-wrap">
+            <label class="form-label">Fiber (g)</label>
+            <input class="form-input" id="f-fiber" type="number" min="0" placeholder="0">
+          </div>
+        </div>
+
+        <div class="section-title">🥦 Ingredients</div>
+        <div class="ingredient-list" id="ingredient-list"></div>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="addIngredientRow()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Add Ingredient
+        </button>
+
+        <div class="section-title">📝 Method / Instructions</div>
+        <div class="form-group">
+          <textarea class="form-textarea" id="f-instructions" rows="5" placeholder="Step-by-step preparation instructions…"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeOverlay('form-overlay')">Cancel</button>
+      <button class="btn btn-primary" onclick="document.getElementById('recipe-form').requestSubmit()">Save Recipe</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detail View -->
+<div class="overlay" id="detail-overlay" onclick="if(event.target.id==='detail-overlay')closeOverlay('detail-overlay')">
+  <div class="modal" style="max-width:760px">
+    <div class="modal-header" id="detail-modal-header">
+      <div>
+        <div class="modal-title" id="detail-name"></div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:3px" id="detail-meta"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="status-badge" id="detail-status-badge"></span>
+        <button class="btn-icon" title="Generate QR Code" onclick="openQR(currentRecipeId)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="2" height="2"/><rect x="18" y="14" width="2" height="2"/><rect x="14" y="18" width="2" height="2"/><rect x="18" y="18" width="2" height="2"/></svg>
+        </button>
+        <button class="btn-icon" title="Edit" onclick="editCurrentRecipe()">✏️</button>
+        <button class="btn-icon" title="Delete" style="color:var(--red)" onclick="deleteCurrentRecipe()">🗑</button>
+        <button class="modal-close" onclick="closeOverlay('detail-overlay')">×</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="status-select-row">
+        <span style="font-size:13px;font-weight:600;color:var(--text-muted)">Status:</span>
+        <select class="form-select" id="detail-status-select" onchange="changeDetailStatus(this.value)" style="max-width:180px">
+          <option value="ideation">💡 Ideation</option>
+          <option value="testing">🔬 Testing</option>
+          <option value="refining">✏️ Refining</option>
+          <option value="approved">✅ Approved</option>
+          <option value="rejected">❌ Rejected</option>
+        </select>
+        <span style="font-size:12px;color:var(--text-muted)" id="detail-serving-info"></span>
+      </div>
+      <div id="detail-description" style="font-size:14px;color:var(--text-muted);line-height:1.6;margin-bottom:4px"></div>
+      <div class="detail-macro-bar" id="detail-macros"></div>
+      <div class="tabs">
+        <div class="tab active" data-tab="ingredients" onclick="switchDetailTab('ingredients',this)">Ingredients</div>
+        <div class="tab" data-tab="instructions" onclick="switchDetailTab('instructions',this)">Method</div>
+        <div class="tab" data-tab="notes" onclick="switchDetailTab('notes',this)">Dev Notes</div>
+        <div class="tab" data-tab="feedback" onclick="switchDetailTab('feedback',this)">Feedback</div>
+      </div>
+      <div id="tab-ingredients"></div>
+      <div id="tab-instructions" style="display:none"></div>
+      <div id="tab-notes" style="display:none"></div>
+      <div id="tab-feedback" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="overlay" id="qr-overlay" onclick="if(event.target.id==='qr-overlay')closeOverlay('qr-overlay')">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title">QR Feedback Code</div>
+      <button class="modal-close" onclick="closeOverlay('qr-overlay')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="qr-modal-content">
+        <div class="qr-recipe-name" id="qr-recipe-name"></div>
+        <div class="qr-sub">Scan to leave feedback</div>
+        <div id="qr-canvas"></div>
+        <div class="qr-url-box" id="qr-url-display"></div>
+        <button class="btn btn-ghost btn-sm" onclick="copyFeedbackURL()" style="width:100%;justify-content:center;margin-bottom:4px">
+          📋 Copy Feedback Link
+        </button>
+        <div class="qr-tip">
+          <strong>Tip:</strong> For testers on other devices, open this file via a local server so the QR link is network-accessible.
+          Run <code style="background:#DBEAFE;padding:1px 5px;border-radius:3px">npx serve .</code> in the file's folder, then use your local IP address.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn btn-ghost btn-sm" onclick="printQR()">🖨 Print QR</button>
+      <button class="btn btn-primary" onclick="closeOverlay('qr-overlay')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm -->
+<div class="overlay" id="confirm-overlay">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-body" style="text-align:center;padding:32px 24px">
+      <div style="font-size:40px;margin-bottom:12px" id="confirm-icon">⚠️</div>
+      <div style="font-size:17px;font-weight:700;margin-bottom:8px" id="confirm-title">Are you sure?</div>
+      <div style="font-size:14px;color:var(--text-muted);line-height:1.6" id="confirm-msg"></div>
+    </div>
+    <div class="modal-footer" style="justify-content:center">
+      <button class="btn btn-ghost" onclick="closeOverlay('confirm-overlay')">Cancel</button>
+      <button class="btn" id="confirm-btn" style="background:var(--red);color:#fff" onclick="runConfirm()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+// ─── Data ────────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'tandoco-recipe-lab';
+let recipes = [];
+let currentFilter = 'all';
+let currentCategory = null;
+let currentRecipeId = null;
+let pendingConfirm = null;
+let qrInstance = null;
+let currentFeedbackURL = '';
+
+const STATUSES = ['ideation','testing','refining','approved','rejected'];
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    recipes = raw ? JSON.parse(raw) : sampleData();
+  } catch { recipes = sampleData(); }
+}
+
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes)); }
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+
+function sampleData() {
+  return [
+    {
+      id: 'sample1',
+      name: 'High-Protein Chicken Rice Bowl',
+      category: 'Post-Workout',
+      description: 'A macro-optimized chicken and rice bowl with lean chicken breast, jasmine rice, and a savory sauce. Perfect post-workout recovery meal.',
+      servingSize: '1 bowl (450g)', servings: 2,
+      macros: { calories: 540, protein: 52, carbs: 58, fat: 9, fiber: 4 },
+      ingredients: [
+        { name: 'Chicken Breast', amount: '300g' },
+        { name: 'Jasmine Rice (dry)', amount: '180g' },
+        { name: 'Greek Yogurt', amount: '80g' },
+        { name: 'Soy Sauce', amount: '2 tbsp' },
+        { name: 'Garlic Powder', amount: '1 tsp' },
+        { name: 'Broccoli', amount: '150g' },
+      ],
+      instructions: '1. Cook jasmine rice according to package.\n2. Season chicken breast with garlic powder, salt, and pepper.\n3. Grill or pan-sear chicken 6–7 min per side until cooked through.\n4. Steam broccoli until tender-crisp.\n5. Slice chicken and serve over rice with broccoli.\n6. Mix greek yogurt with soy sauce and drizzle over.',
+      status: 'approved',
+      createdAt: new Date(Date.now() - 7*86400000).toISOString(),
+      updatedAt: new Date(Date.now() - 2*86400000).toISOString(),
+      notes: [
+        { id: genId(), author: 'Team', text: 'First batch great. Sauce needs more umami.', createdAt: new Date(Date.now() - 5*86400000).toISOString() },
+        { id: genId(), author: 'Team', text: 'Added soy sauce reduction — perfect now. Ready for trials.', createdAt: new Date(Date.now() - 3*86400000).toISOString() }
+      ],
+      feedback: [
+        { id: genId(), name: 'Marcus T.', rating: 5, comment: 'Love this! Would eat every day after the gym.', date: new Date(Date.now() - 86400000).toISOString() },
+        { id: genId(), name: 'Kim R.', rating: 4, comment: 'Really liked the sauce. Maybe add some chili flakes?', date: new Date(Date.now() - 2*86400000).toISOString() }
+      ]
+    },
+    {
+      id: 'sample2',
+      name: 'Protein Pancakes Stack',
+      category: 'Breakfast',
+      description: 'Fluffy protein-packed pancakes made with oat flour and whey protein. High protein, lower sugar version of a breakfast classic.',
+      servingSize: '3 pancakes', servings: 1,
+      macros: { calories: 380, protein: 36, carbs: 42, fat: 7, fiber: 5 },
+      ingredients: [
+        { name: 'Oat Flour', amount: '60g' },
+        { name: 'Whey Protein (vanilla)', amount: '40g' },
+        { name: 'Egg Whites', amount: '4 large' },
+        { name: 'Banana (ripe)', amount: '1 medium' },
+        { name: 'Baking Powder', amount: '1 tsp' },
+        { name: 'Almond Milk', amount: '60ml' },
+      ],
+      instructions: '1. Mash banana in a mixing bowl until smooth.\n2. Add egg whites and almond milk, whisk.\n3. Fold in oat flour, protein powder, and baking powder.\n4. Heat non-stick pan on medium-low. No oil needed.\n5. Pour batter into 3 equal portions.\n6. Cook 2–3 min until bubbles form, flip, cook 1 more min.\n7. Top with berries or a drizzle of honey.',
+      status: 'testing',
+      createdAt: new Date(Date.now() - 3*86400000).toISOString(),
+      updatedAt: new Date(Date.now() - 86400000).toISOString(),
+      notes: [
+        { id: genId(), author: 'Dev', text: 'First version too dense. Reduced flour by 20g — much better.', createdAt: new Date(Date.now() - 2*86400000).toISOString() }
+      ],
+      feedback: [
+        { id: genId(), name: 'Jake L.', rating: 4, comment: 'Better than expected for a protein pancake. Would add blueberries.', date: new Date(Date.now() - 86400000).toISOString() }
+      ]
+    },
+    {
+      id: 'sample3',
+      name: 'Tuna & Avocado Lettuce Wraps',
+      category: 'Lunch',
+      description: 'Low-carb, high-protein lunch wraps. Quick to assemble with no cooking required.',
+      servingSize: '2 wraps', servings: 1,
+      macros: { calories: 310, protein: 34, carbs: 8, fat: 16, fiber: 5 },
+      ingredients: [
+        { name: 'Canned Tuna (in water)', amount: '160g' },
+        { name: 'Avocado', amount: '½ medium' },
+        { name: 'Butter Lettuce', amount: '4 large leaves' },
+        { name: 'Red Onion', amount: '2 tbsp diced' },
+        { name: 'Lemon Juice', amount: '1 tbsp' },
+        { name: 'Dijon Mustard', amount: '1 tsp' },
+      ],
+      instructions: '1. Drain tuna and place in bowl.\n2. Mash avocado and mix with tuna.\n3. Add lemon juice, dijon, and diced onion. Mix.\n4. Season with salt and pepper.\n5. Spoon into lettuce cups.',
+      status: 'ideation',
+      createdAt: new Date(Date.now() - 86400000).toISOString(),
+      updatedAt: new Date().toISOString(),
+      notes: [],
+      feedback: []
+    }
+  ];
+}
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+const AUTH_KEY = 'tandoco-auth';
+
+function tryLogin() {
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const err  = document.getElementById('login-error');
+  if (user === 'tandoco' && pass === 'cinnamonroll2001') {
+    sessionStorage.setItem(AUTH_KEY, '1');
+    document.getElementById('login-screen').classList.remove('visible');
+    document.getElementById('main-app').style.display = '';
+    renderAll();
+    err.classList.remove('visible');
+  } else {
+    err.classList.add('visible');
+    document.getElementById('login-pass').value = '';
+    document.getElementById('login-pass').focus();
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem(AUTH_KEY);
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').classList.remove('visible');
+  document.getElementById('login-screen').classList.add('visible');
+}
+
+function isLoggedIn() {
+  return sessionStorage.getItem(AUTH_KEY) === '1';
+}
+
+// ─── Routing ─────────────────────────────────────────────────────────────────
+function init() {
+  load();
+  const hash = window.location.hash;
+  if (hash.startsWith('#feedback/')) {
+    // Public feedback page — no login required
+    const recipeId = hash.slice('#feedback/'.length);
+    showFeedbackPage(recipeId);
+  } else if (isLoggedIn()) {
+    document.getElementById('main-app').style.display = '';
+    renderAll();
+  } else {
+    document.getElementById('login-screen').classList.add('visible');
+  }
+
+  // Sync feedback submitted from other tabs/devices on same origin
+  window.addEventListener('storage', e => {
+    if (e.key === STORAGE_KEY && isLoggedIn()) {
+      load();
+      renderAll();
+    }
+  });
+}
+
+// ─── Feedback Page (public, QR-scanned) ──────────────────────────────────────
+function showFeedbackPage(recipeId) {
+  document.getElementById('main-app').style.display = 'none';
+  const page = document.getElementById('feedback-page');
+  page.classList.add('visible');
+  const card = document.getElementById('fb-card-inner');
+
+  const r = recipes.find(x => x.id === recipeId);
+  if (!r) {
+    card.innerHTML = `
+      <div class="fb-error">
+        <div class="fb-error-icon">🔍</div>
+        <h2>Recipe Not Found</h2>
+        <p>This recipe may have been removed or the link is invalid. Ask the host for the correct QR code.</p>
+      </div>`;
+    return;
+  }
+
+  card.innerHTML = `
+    <div class="fb-header">
+      <div class="fb-logo">tandoco Recipe Lab</div>
+      <div class="fb-recipe-name">${esc(r.name)}</div>
+      ${r.category ? `<div class="fb-recipe-sub">${esc(r.category)}${r.servingSize ? ' · ' + esc(r.servingSize) : ''}</div>` : ''}
+    </div>
+    <div class="fb-body">
+      <div class="fb-question">
+        <label class="fb-label">How would you rate this recipe?</label>
+        <div class="fb-stars" id="fb-star-row">
+          <input type="radio" name="fbr" id="fbr5" value="5"><label for="fbr5" onmouseover="hintStar(5)" onmouseout="hintStar(0)">★</label>
+          <input type="radio" name="fbr" id="fbr4" value="4"><label for="fbr4" onmouseover="hintStar(4)" onmouseout="hintStar(0)">★</label>
+          <input type="radio" name="fbr" id="fbr3" value="3"><label for="fbr3" onmouseover="hintStar(3)" onmouseout="hintStar(0)">★</label>
+          <input type="radio" name="fbr" id="fbr2" value="2"><label for="fbr2" onmouseover="hintStar(2)" onmouseout="hintStar(0)">★</label>
+          <input type="radio" name="fbr" id="fbr1" value="1"><label for="fbr1" onmouseover="hintStar(1)" onmouseout="hintStar(0)">★</label>
+        </div>
+        <div class="star-hint" id="star-hint-text"></div>
+      </div>
+      <div class="fb-question">
+        <label class="fb-label">Your name</label>
+        <input class="fb-input" id="fb-pub-name" placeholder="e.g. Sarah M." autocomplete="name">
+      </div>
+      <div class="fb-question">
+        <label class="fb-label">Comments &amp; thoughts</label>
+        <textarea class="fb-textarea" id="fb-pub-comment" placeholder="What did you think? What did you love? Any suggestions?"></textarea>
+      </div>
+      <button class="fb-submit" onclick="submitPublicFeedback('${recipeId}')">Submit Feedback</button>
+    </div>`;
+}
+
+const STAR_HINTS = ['', 'Poor', 'Fair', 'Good', 'Great', 'Amazing!'];
+function hintStar(n) {
+  const el = document.getElementById('star-hint-text');
+  if (el) el.textContent = n ? STAR_HINTS[n] : '';
+}
+
+function submitPublicFeedback(recipeId) {
+  const ratingEl = document.querySelector('input[name="fbr"]:checked');
+  const name = (document.getElementById('fb-pub-name')?.value || '').trim();
+  const comment = (document.getElementById('fb-pub-comment')?.value || '').trim();
+
+  if (!ratingEl) { alert('Please select a star rating!'); return; }
+  if (!name) { alert('Please enter your name!'); return; }
+
+  // Write to localStorage (works same-origin — same device or served locally)
+  load(); // re-read latest
+  const r = recipes.find(x => x.id === recipeId);
+  if (!r) { alert('Recipe not found. Please try again.'); return; }
+
+  r.feedback = r.feedback || [];
+  r.feedback.push({
+    id: genId(),
+    name,
+    rating: parseInt(ratingEl.value),
+    comment,
+    date: new Date().toISOString()
+  });
+  r.updatedAt = new Date().toISOString();
+  save();
+
+  // Show success
+  const card = document.getElementById('fb-card-inner');
+  card.innerHTML = `
+    <div class="fb-success">
+      <div class="fb-success-icon">🎉</div>
+      <h2>Thanks, ${esc(name)}!</h2>
+      <p>Your feedback for <strong>${esc(r.name)}</strong> has been recorded. The team really appreciates it!</p>
+    </div>`;
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function renderAll() {
+  updateCounts();
+  renderSidebarCategories();
+  renderRecipes();
+  updateStats();
+}
+
+function updateCounts() {
+  document.getElementById('count-all').textContent = recipes.length;
+  STATUSES.forEach(s => {
+    const el = document.getElementById(`count-${s}`);
+    if (el) el.textContent = recipes.filter(r => r.status === s).length;
+  });
+}
+
+function renderSidebarCategories() {
+  const cats = [...new Set(recipes.map(r => r.category).filter(Boolean))].sort();
+  const el = document.getElementById('category-list');
+  if (!cats.length) {
+    el.innerHTML = '<div style="padding:4px 16px;font-size:12px;color:var(--text-muted)">No categories yet</div>';
+    return;
+  }
+  el.innerHTML = cats.map(cat => {
+    const count = recipes.filter(r => r.category === cat).length;
+    const active = currentCategory === cat;
+    return `<div class="sidebar-item ${active ? 'active' : ''}" onclick="setCategoryFilter('${esc(cat)}')">
+      <span>🏷</span> ${esc(cat)} <span class="count">${count}</span>
+    </div>`;
+  }).join('');
+}
+
+function updateStats() {
+  document.getElementById('stat-total').textContent = recipes.length;
+  document.getElementById('stat-ideation').textContent = recipes.filter(r => r.status === 'ideation').length;
+  document.getElementById('stat-testing').textContent = recipes.filter(r => r.status === 'testing').length;
+  document.getElementById('stat-approved').textContent = recipes.filter(r => r.status === 'approved').length;
+  document.getElementById('stat-feedback').textContent = recipes.reduce((a, r) => a + (r.feedback||[]).length, 0);
+}
+
+function getFiltered() {
+  const search = document.getElementById('search-input').value.toLowerCase().trim();
+  const sort = document.getElementById('sort-select').value;
+  let list = [...recipes];
+  if (currentFilter !== 'all') list = list.filter(r => r.status === currentFilter);
+  if (currentCategory) list = list.filter(r => r.category === currentCategory);
+  if (search) list = list.filter(r =>
+    r.name.toLowerCase().includes(search) ||
+    (r.description||'').toLowerCase().includes(search) ||
+    (r.category||'').toLowerCase().includes(search)
+  );
+  list.sort((a, b) => {
+    if (sort === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
+    if (sort === 'oldest') return new Date(a.createdAt) - new Date(b.createdAt);
+    if (sort === 'name')   return a.name.localeCompare(b.name);
+    if (sort === 'protein') return (b.macros?.protein||0) - (a.macros?.protein||0);
+    if (sort === 'rating') return avgRating(b) - avgRating(a);
+    return 0;
+  });
+  return list;
+}
+
+function renderRecipes() {
+  const list = getFiltered();
+  const grid = document.getElementById('recipes-grid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty">
+      <div class="empty-icon">🧪</div>
+      <h3>No recipes found</h3>
+      <p>Try a different filter or add your first recipe.</p>
+      <button class="btn btn-primary" onclick="openAddRecipe()">+ New Recipe</button>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = list.map(r => {
+    const avg = avgRating(r);
+    const fbCount = (r.feedback||[]).length;
+    const noteCount = (r.notes||[]).length;
+    const dateStr = new Date(r.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const stars = avg ? '★'.repeat(Math.round(avg)) + '☆'.repeat(5-Math.round(avg)) : '';
+    return `
+    <div class="recipe-card" onclick="openDetail('${r.id}')">
+      <div class="card-header">
+        <div class="card-title-area">
+          <div class="card-name">${esc(r.name)}</div>
+          <div class="card-category">${esc(r.category||'Uncategorized')} · ${esc(r.servingSize||'1 serving')}</div>
+        </div>
+        <span class="status-badge status-${r.status}">${statusLabel(r.status)}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-description">${esc(r.description)||'<em>No description</em>'}</div>
+        <div class="macros-row">
+          <div class="macro-chip calories"><div class="val">${r.macros?.calories||'—'}</div><div class="lbl">kcal</div></div>
+          <div class="macro-chip protein"><div class="val">${r.macros?.protein||'—'}g</div><div class="lbl">Protein</div></div>
+          <div class="macro-chip"><div class="val">${r.macros?.carbs||'—'}g</div><div class="lbl">Carbs</div></div>
+          <div class="macro-chip"><div class="val">${r.macros?.fat||'—'}g</div><div class="lbl">Fat</div></div>
+        </div>
+      </div>
+      <div class="card-footer">
+        <div class="card-footer-left">
+          ${avg ? `<div class="card-meta"><span class="stars-mini">${stars}</span>${avg.toFixed(1)} (${fbCount})</div>` : `<div class="card-meta">💬 ${fbCount} feedback</div>`}
+          ${noteCount ? `<div class="card-meta">📝 ${noteCount}</div>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn-icon" title="QR Code" onclick="event.stopPropagation();openQR('${r.id}')">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="2" height="2"/><rect x="18" y="14" width="2" height="2"/><rect x="14" y="18" width="2" height="2"/><rect x="18" y="18" width="2" height="2"/></svg>
+          </button>
+          <span style="font-size:11px;color:var(--text-muted)">${dateStr}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function avgRating(r) {
+  const fb = r.feedback||[];
+  if (!fb.length) return 0;
+  return fb.reduce((a,f) => a + f.rating, 0) / fb.length;
+}
+
+function statusLabel(s) {
+  return {ideation:'Ideation',testing:'Testing',refining:'Refining',approved:'Approved',rejected:'Rejected'}[s]||s;
+}
+
+function esc(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── Filters ──────────────────────────────────────────────────────────────────
+function setFilter(filter) {
+  currentFilter = filter;
+  currentCategory = null;
+  document.querySelectorAll('[data-filter]').forEach(el => el.classList.remove('active'));
+  document.querySelector(`[data-filter="${filter}"]`)?.classList.add('active');
+  renderSidebarCategories();
+  renderRecipes();
+}
+
+function setCategoryFilter(cat) {
+  currentCategory = (currentCategory === cat) ? null : cat;
+  if (currentCategory) {
+    currentFilter = 'all';
+    document.querySelectorAll('[data-filter]').forEach(el => el.classList.remove('active'));
+    document.querySelector('[data-filter="all"]')?.classList.add('active');
+  }
+  renderSidebarCategories();
+  renderRecipes();
+}
+
+// ─── Add / Edit ───────────────────────────────────────────────────────────────
+let editingId = null;
+
+function openAddRecipe() {
+  editingId = null;
+  document.getElementById('form-modal-title').textContent = 'New Recipe';
+  clearForm();
+  addIngredientRow(); addIngredientRow(); addIngredientRow();
+  openOverlay('form-overlay');
+}
+
+function editCurrentRecipe() {
+  closeOverlay('detail-overlay');
+  const r = recipes.find(x => x.id === currentRecipeId);
+  if (!r) return;
+  editingId = r.id;
+  document.getElementById('form-modal-title').textContent = 'Edit Recipe';
+  clearForm();
+  document.getElementById('f-name').value = r.name||'';
+  document.getElementById('f-category').value = r.category||'';
+  document.getElementById('f-description').value = r.description||'';
+  document.getElementById('f-serving-size').value = r.servingSize||'';
+  document.getElementById('f-servings').value = r.servings||'';
+  document.getElementById('f-status').value = r.status||'ideation';
+  document.getElementById('f-calories').value = r.macros?.calories||'';
+  document.getElementById('f-protein').value = r.macros?.protein||'';
+  document.getElementById('f-carbs').value = r.macros?.carbs||'';
+  document.getElementById('f-fat').value = r.macros?.fat||'';
+  document.getElementById('f-fiber').value = r.macros?.fiber||'';
+  document.getElementById('f-instructions').value = r.instructions||'';
+  const list = document.getElementById('ingredient-list');
+  list.innerHTML = '';
+  (r.ingredients||[]).forEach(i => addIngredientRow(i.name, i.amount));
+  if (!r.ingredients?.length) { addIngredientRow(); addIngredientRow(); }
+  openOverlay('form-overlay');
+}
+
+function clearForm() {
+  document.getElementById('recipe-form').reset();
+  document.getElementById('ingredient-list').innerHTML = '';
+}
+
+function addIngredientRow(name='', amount='') {
+  const row = document.createElement('div');
+  row.className = 'ingredient-row';
+  row.innerHTML = `
+    <input class="form-input" placeholder="Ingredient name" value="${esc(name)}">
+    <input class="form-input" placeholder="Amount" value="${esc(amount)}">
+    <button type="button" class="remove-btn" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('ingredient-list').appendChild(row);
+}
+
+function saveRecipe(e) {
+  e.preventDefault();
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { toast('Recipe name is required.','error'); return; }
+
+  const ingredients = [...document.querySelectorAll('#ingredient-list .ingredient-row')]
+    .map(row => ({ name: row.querySelectorAll('input')[0].value.trim(), amount: row.querySelectorAll('input')[1].value.trim() }))
+    .filter(i => i.name);
+
+  const macros = {
+    calories: parseFloat(document.getElementById('f-calories').value)||0,
+    protein:  parseFloat(document.getElementById('f-protein').value)||0,
+    carbs:    parseFloat(document.getElementById('f-carbs').value)||0,
+    fat:      parseFloat(document.getElementById('f-fat').value)||0,
+    fiber:    parseFloat(document.getElementById('f-fiber').value)||0,
+  };
+
+  if (editingId) {
+    const idx = recipes.findIndex(r => r.id === editingId);
+    if (idx !== -1) {
+      recipes[idx] = { ...recipes[idx], name,
+        category: document.getElementById('f-category').value.trim(),
+        description: document.getElementById('f-description').value.trim(),
+        servingSize: document.getElementById('f-serving-size').value.trim(),
+        servings: parseInt(document.getElementById('f-servings').value)||1,
+        status: document.getElementById('f-status').value,
+        macros, ingredients,
+        instructions: document.getElementById('f-instructions').value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+      toast('Recipe updated!','success');
+    }
+  } else {
+    recipes.unshift({
+      id: genId(), name,
+      category: document.getElementById('f-category').value.trim(),
+      description: document.getElementById('f-description').value.trim(),
+      servingSize: document.getElementById('f-serving-size').value.trim(),
+      servings: parseInt(document.getElementById('f-servings').value)||1,
+      status: document.getElementById('f-status').value,
+      macros, ingredients,
+      instructions: document.getElementById('f-instructions').value.trim(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      notes: [], feedback: []
+    });
+    toast('Recipe added!','success');
+  }
+  save();
+  closeOverlay('form-overlay');
+  renderAll();
+}
+
+// ─── Delete ───────────────────────────────────────────────────────────────────
+function deleteCurrentRecipe() {
+  pendingConfirm = () => {
+    recipes = recipes.filter(r => r.id !== currentRecipeId);
+    save();
+    closeOverlay('detail-overlay');
+    closeOverlay('confirm-overlay');
+    renderAll();
+    toast('Recipe deleted.','success');
+  };
+  document.getElementById('confirm-icon').textContent = '🗑️';
+  document.getElementById('confirm-title').textContent = 'Delete Recipe?';
+  document.getElementById('confirm-msg').textContent = 'This will permanently remove the recipe, all notes, and all feedback.';
+  document.getElementById('confirm-btn').textContent = 'Delete Recipe';
+  openOverlay('confirm-overlay');
+}
+
+function runConfirm() { if (pendingConfirm) { pendingConfirm(); pendingConfirm = null; } }
+
+// ─── Detail View ──────────────────────────────────────────────────────────────
+function openDetail(id) {
+  currentRecipeId = id;
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+
+  document.getElementById('detail-name').textContent = r.name;
+  document.getElementById('detail-meta').textContent =
+    `${r.category||'No category'} · Added ${new Date(r.createdAt).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}`;
+  document.getElementById('detail-status-badge').className = `status-badge status-${r.status}`;
+  document.getElementById('detail-status-badge').textContent = statusLabel(r.status);
+  document.getElementById('detail-status-select').value = r.status;
+  document.getElementById('detail-description').textContent = r.description||'';
+  document.getElementById('detail-serving-info').textContent = r.servingSize||'';
+
+  const m = r.macros||{};
+  document.getElementById('detail-macros').innerHTML = `
+    <div class="detail-macro"><div class="val">${m.calories||'—'}</div><div class="lbl">Calories</div></div>
+    <div class="detail-macro protein"><div class="val">${m.protein||'—'}g</div><div class="lbl">Protein</div></div>
+    <div class="detail-macro"><div class="val">${m.carbs||'—'}g</div><div class="lbl">Carbs</div></div>
+    <div class="detail-macro"><div class="val">${m.fat||'—'}g</div><div class="lbl">Fat</div></div>
+    <div class="detail-macro"><div class="val">${m.fiber||'—'}g</div><div class="lbl">Fiber</div></div>`;
+
+  // Reset tabs
+  document.querySelectorAll('.tabs .tab').forEach((t,i) => t.classList.toggle('active', i===0));
+  ['ingredients','instructions','notes','feedback'].forEach((t,i) => {
+    document.getElementById('tab-'+t).style.display = i===0 ? '' : 'none';
+  });
+  renderDetailTabs(r);
+  openOverlay('detail-overlay');
+}
+
+function switchDetailTab(tab, el) {
+  document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  ['ingredients','instructions','notes','feedback'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===tab ? '' : 'none';
+  });
+}
+
+function renderDetailTabs(r) {
+  // Ingredients
+  const ings = r.ingredients||[];
+  document.getElementById('tab-ingredients').innerHTML = ings.length
+    ? ings.map(i => `<span class="ingredient-tag">${esc(i.name)} <span class="ingredient-amount">${esc(i.amount)}</span></span>`).join('')
+    : '<p style="color:var(--text-muted);font-size:13px">No ingredients listed.</p>';
+
+  // Instructions
+  document.getElementById('tab-instructions').innerHTML = r.instructions
+    ? `<div class="detail-instructions">${esc(r.instructions)}</div>`
+    : '<p style="color:var(--text-muted);font-size:13px">No instructions added yet.</p>';
+
+  // Notes
+  const notes = r.notes||[];
+  document.getElementById('tab-notes').innerHTML = `
+    <div class="notes-list">
+      ${notes.length ? notes.map(n => `
+        <div class="note-item">
+          <div class="note-meta">
+            <span class="note-author">${esc(n.author||'Team')}</span><span>·</span>
+            <span>${new Date(n.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>
+          </div>
+          <div class="note-text">${esc(n.text)}</div>
+        </div>`) .join('') : '<p style="color:var(--text-muted);font-size:13px;padding:4px 0">No dev notes yet.</p>'}
+    </div>
+    <div class="add-note-row">
+      <textarea id="note-input" placeholder="Add a development note…"></textarea>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <input class="form-input" id="note-author" placeholder="Your name" style="max-width:130px">
+        <button class="btn btn-primary btn-sm" onclick="addNote('${r.id}')">Add Note</button>
+      </div>
+    </div>`;
+
+  // Feedback
+  const fb = r.feedback||[];
+  const avg = avgRating(r);
+  let fbHtml = '';
+  if (avg) {
+    fbHtml += `<div class="avg-rating">
+      <span class="stars">${'★'.repeat(Math.round(avg))}${'☆'.repeat(5-Math.round(avg))}</span>
+      <strong>${avg.toFixed(1)}</strong>
+      <span>${fb.length} tester${fb.length!==1?'s':''}</span>
+    </div>`;
+  }
+  if (fb.length) {
+    fbHtml += `<div class="feedback-list">${fb.map(f => `
+      <div class="feedback-item">
+        <div class="feedback-header">
+          <span class="feedback-name">${esc(f.name)}</span>
+          <span class="feedback-date">${new Date(f.date).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</span>
+        </div>
+        <div class="stars">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</div>
+        ${f.comment ? `<div class="feedback-comment">${esc(f.comment)}</div>` : ''}
+      </div>`).join('')}</div>`;
+  } else {
+    fbHtml += '<p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">No feedback yet — generate the QR code and share with testers!</p>';
+  }
+  fbHtml += `<div style="display:flex;gap:8px;margin-top:8px">
+    <button class="btn btn-primary btn-sm" onclick="openQR('${r.id}')">📱 Get QR Code</button>
+    <button class="btn btn-ghost btn-sm" onclick="openManualFeedback('${r.id}')">+ Add Manually</button>
+  </div>`;
+  document.getElementById('tab-feedback').innerHTML = fbHtml;
+}
+
+function changeDetailStatus(newStatus) {
+  const r = recipes.find(x => x.id === currentRecipeId);
+  if (!r) return;
+  r.status = newStatus;
+  r.updatedAt = new Date().toISOString();
+  document.getElementById('detail-status-badge').className = `status-badge status-${newStatus}`;
+  document.getElementById('detail-status-badge').textContent = statusLabel(newStatus);
+  save(); renderAll();
+  toast(`Status → ${statusLabel(newStatus)}`, 'success');
+}
+
+// ─── Notes ────────────────────────────────────────────────────────────────────
+function addNote(recipeId) {
+  const text = document.getElementById('note-input')?.value.trim();
+  const author = document.getElementById('note-author')?.value.trim() || 'Team';
+  if (!text) { toast('Please enter a note.','error'); return; }
+  const r = recipes.find(x => x.id === recipeId);
+  if (!r) return;
+  r.notes = r.notes||[];
+  r.notes.push({ id: genId(), author, text, createdAt: new Date().toISOString() });
+  r.updatedAt = new Date().toISOString();
+  save();
+  renderDetailTabs(r);
+  // stay on notes tab
+  switchDetailTab('notes', document.querySelector('.tab[data-tab="notes"]'));
+  toast('Note added!','success');
+}
+
+// ─── Manual Feedback ──────────────────────────────────────────────────────────
+let manualFeedbackId = null;
+function openManualFeedback(recipeId) {
+  manualFeedbackId = recipeId;
+  // Reuse the existing detail tab with a simple inline form
+  const r = recipes.find(x => x.id === recipeId);
+  if (!r) return;
+  const tab = document.getElementById('tab-feedback');
+  tab.innerHTML += `
+    <div id="manual-fb-form" style="margin-top:16px;padding:16px;background:var(--gray-light);border-radius:var(--radius-sm)">
+      <div style="font-weight:700;margin-bottom:12px;font-size:13px">Add Feedback Manually</div>
+      <div class="form-grid" style="margin-bottom:10px">
+        <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="mfb-name" placeholder="Tester name"></div>
+        <div class="form-group"><label class="form-label">Rating</label>
+          <select class="form-select" id="mfb-rating">
+            <option value="5">★★★★★ (5)</option><option value="4">★★★★☆ (4)</option>
+            <option value="3">★★★☆☆ (3)</option><option value="2">★★☆☆☆ (2)</option><option value="1">★☆☆☆☆ (1)</option>
+          </select>
+        </div>
+        <div class="form-group full"><label class="form-label">Comment</label><textarea class="form-textarea" id="mfb-comment" rows="2" placeholder="Their feedback…"></textarea></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary btn-sm" onclick="submitManualFeedback('${recipeId}')">Save</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('manual-fb-form').remove()">Cancel</button>
+      </div>
+    </div>`;
+}
+
+function submitManualFeedback(recipeId) {
+  const name = document.getElementById('mfb-name')?.value.trim();
+  const rating = parseInt(document.getElementById('mfb-rating')?.value||'5');
+  const comment = document.getElementById('mfb-comment')?.value.trim();
+  if (!name) { toast('Please enter a name.','error'); return; }
+  const r = recipes.find(x => x.id === recipeId);
+  if (!r) return;
+  r.feedback = r.feedback||[];
+  r.feedback.push({ id: genId(), name, rating, comment, date: new Date().toISOString() });
+  r.updatedAt = new Date().toISOString();
+  save();
+  renderDetailTabs(r);
+  switchDetailTab('feedback', document.querySelector('.tab[data-tab="feedback"]'));
+  renderAll();
+  toast('Feedback added!','success');
+}
+
+// ─── QR Code ──────────────────────────────────────────────────────────────────
+function getFeedbackURL(recipeId) {
+  const base = window.location.href.split('#')[0];
+  return base + '#feedback/' + recipeId;
+}
+
+function openQR(recipeId) {
+  const r = recipes.find(x => x.id === recipeId);
+  if (!r) return;
+
+  currentFeedbackURL = getFeedbackURL(recipeId);
+  document.getElementById('qr-recipe-name').textContent = r.name;
+  document.getElementById('qr-url-display').textContent = currentFeedbackURL;
+
+  // Clear and regenerate QR
+  const canvas = document.getElementById('qr-canvas');
+  canvas.innerHTML = '';
+  if (qrInstance) { try { qrInstance.clear(); } catch(e){} }
+
+  try {
+    qrInstance = new QRCode(canvas, {
+      text: currentFeedbackURL,
+      width: 220, height: 220,
+      colorDark: '#111827',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(e) {
+    canvas.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">
+      QR library not loaded. Copy the link below to share.</div>`;
+  }
+
+  openOverlay('qr-overlay');
+}
+
+function copyFeedbackURL() {
+  if (!currentFeedbackURL) return;
+  navigator.clipboard.writeText(currentFeedbackURL).then(() => {
+    toast('Link copied to clipboard!','success');
+  }).catch(() => {
+    prompt('Copy this feedback link:', currentFeedbackURL);
+  });
+}
+
+function printQR() {
+  const canvas = document.getElementById('qr-canvas');
+  const img = canvas.querySelector('img') || canvas.querySelector('canvas');
+  if (!img) { toast('Nothing to print.','error'); return; }
+  const win = window.open('','_blank');
+  const src = img.tagName === 'IMG' ? img.src : img.toDataURL();
+  win.document.write(`
+    <html><head><title>QR — ${document.getElementById('qr-recipe-name').textContent}</title>
+    <style>body{font-family:sans-serif;text-align:center;padding:40px}
+    h2{margin-bottom:8px}p{color:#666;font-size:14px;margin-bottom:20px}
+    img{border:1px solid #ddd;border-radius:12px;padding:10px}</style></head>
+    <body>
+      <h2>${esc(document.getElementById('qr-recipe-name').textContent)}</h2>
+      <p>Scan to leave feedback · tandoco Recipe Lab</p>
+      <img src="${src}" width="220" height="220">
+      <p style="margin-top:20px;font-size:12px;word-break:break-all;color:#999">${esc(currentFeedbackURL)}</p>
+    </body></html>`);
+  win.document.close();
+  win.print();
+}
+
+// ─── Overlays ─────────────────────────────────────────────────────────────────
+function openOverlay(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeOverlay(id) {
+  document.getElementById(id).classList.remove('open');
+  if (!document.querySelector('.overlay.open')) document.body.style.overflow = '';
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function toast(msg, type='') {
+  const c = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  c.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ─── Keyboard ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    const open = document.querySelector('.overlay.open');
+    if (open) closeOverlay(open.id);
+  }
+});
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
