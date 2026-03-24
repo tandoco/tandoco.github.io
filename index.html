@@ -616,6 +616,10 @@
     <span><span class="logo-brand">tandoco</span> Recipe Lab</span>
   </div>
   <div class="header-actions">
+    <button class="btn btn-ghost" id="sync-btn" onclick="syncFeedbackFromGitHub()" title="Pull latest tester feedback from GitHub">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      Sync Feedback
+    </button>
     <button class="btn btn-primary" onclick="openAddRecipe()">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
       New Recipe
@@ -871,8 +875,7 @@
           📋 Copy Feedback Link
         </button>
         <div class="qr-tip">
-          <strong>Tip:</strong> For testers on other devices, open this file via a local server so the QR link is network-accessible.
-          Run <code style="background:#DBEAFE;padding:1px 5px;border-radius:3px">npx serve .</code> in the file's folder, then use your local IP address.
+          <strong>✅ Public feedback:</strong> Anyone who scans this will land on <code style="background:#DBEAFE;padding:1px 5px;border-radius:3px">feedback.html</code> — no login needed. After testers submit, use the <strong>Sync Feedback</strong> button in the header to pull their responses into the app.
         </div>
       </div>
     </div>
@@ -904,6 +907,12 @@
      JAVASCRIPT
 ══════════════════════════════════════ -->
 <script>
+// ─── GitHub Config (must match feedback.html) ────────────────────────────────
+// Fill these in to enable "Sync Feedback" — pulls tester submissions from GitHub Issues
+const GITHUB_OWNER = 'YOUR-GITHUB-USERNAME';
+const GITHUB_REPO  = 'YOUR-FEEDBACK-REPO';
+const GITHUB_TOKEN = 'YOUR-GITHUB-TOKEN';
+
 // ─── Data ────────────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'tandoco-recipe-lab';
 let recipes = [];
@@ -1605,8 +1614,15 @@ function submitManualFeedback(recipeId) {
 
 // ─── QR Code ──────────────────────────────────────────────────────────────────
 function getFeedbackURL(recipeId) {
-  const base = window.location.href.split('#')[0];
-  return base + '#feedback/' + recipeId;
+  const r = recipes.find(x => x.id === recipeId);
+  const base = window.location.href.split('/').slice(0,-1).join('/') + '/feedback.html';
+  const params = new URLSearchParams({ id: recipeId });
+  if (r) {
+    params.set('name', r.name);
+    if (r.category) params.set('cat', r.category);
+    if (r.servingSize) params.set('srv', r.servingSize);
+  }
+  return base + '?' + params.toString();
 }
 
 function openQR(recipeId) {
@@ -1695,6 +1711,79 @@ document.addEventListener('keydown', e => {
     if (open) closeOverlay(open.id);
   }
 });
+
+// ─── Sync Feedback from GitHub Issues ────────────────────────────────────────
+async function syncFeedbackFromGitHub() {
+  if (GITHUB_OWNER === 'YOUR-GITHUB-USERNAME') {
+    toast('Configure GitHub settings in feedback.html and index.html first.', 'error');
+    return;
+  }
+  const btn = document.getElementById('sync-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Syncing…';
+  try {
+    // Fetch all issues with label "feedback" (up to 100 most recent)
+    const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/issues?labels=feedback&state=open&per_page=100`;
+    const res = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      }
+    });
+    if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+    const issues = await res.json();
+
+    let added = 0;
+    for (const issue of issues) {
+      const body = issue.body || '';
+      // Parse the structured feedback body
+      const idMatch      = body.match(/\*\*Recipe ID:\*\* (.+)/);
+      const nameMatch    = body.match(/\*\*Tester Name:\*\* (.+)/);
+      const ratingMatch  = body.match(/\*\*Rating:\*\* (\d)/);
+      const dateMatch    = body.match(/\*\*Submitted:\*\* (.+)/);
+      const commentMatch = body.match(/\*\*Comment:\*\*
+([\s\S]+?)(?=
+<!--|$)/);
+
+      if (!idMatch || !nameMatch || !ratingMatch) continue;
+
+      const recipeId = idMatch[1].trim();
+      const r = recipes.find(x => x.id === recipeId);
+      if (!r) continue;
+
+      const fbId = 'gh-' + issue.number;
+      // Skip if already imported
+      if ((r.feedback || []).find(f => f.id === fbId)) continue;
+
+      r.feedback = r.feedback || [];
+      const rawComment = (commentMatch?.[1] || '').trim();
+      r.feedback.push({
+        id: fbId,
+        name: nameMatch[1].trim(),
+        rating: parseInt(ratingMatch[1]),
+        comment: rawComment === '*(no comment)*' ? '' : rawComment,
+        date: dateMatch ? dateMatch[1].trim() : issue.created_at,
+      });
+      r.updatedAt = new Date().toISOString();
+      added++;
+    }
+
+    save();
+    renderAll();
+    if (added > 0) {
+      toast(`✅ Synced ${added} new feedback submission${added !== 1 ? 's' : ''}!`, 'success');
+    } else {
+      toast('Already up to date — no new submissions found.', '');
+    }
+  } catch (err) {
+    toast('Sync failed: ' + err.message, 'error');
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sync Feedback`;
+  }
+}
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 init();
